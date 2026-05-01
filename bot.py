@@ -41,3 +41,7 @@ async def webhook():
             )
 
     return "ok"
+    import time
+
+while True:
+    time.sleep(10)
