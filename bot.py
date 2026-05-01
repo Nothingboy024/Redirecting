@@ -1,47 +1,62 @@
-import base64
 import os
-from flask import Flask, request
-from telegram import Update
-from telegram.ext import Application
+from urllib.parse import quote_plus
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-BLOG_REDIRECT = "https://achiveanimeencodes.blogspot.com/p/redirect.html#"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-app = Flask(__name__)
-application = Application.builder().token(BOT_TOKEN).build()
+REDIRECT_BASE = "https://achiveanimeencodes.blogspot.com/p/redirect.html?url="
 
-def encode_url(url: str) -> str:
-    first = base64.b64encode(url.encode()).decode()
-    second = base64.b64encode(first.encode()).decode()
-    return second
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Send me your download link.\nI will generate quality buttons for you."
+    )
 
-@app.route("/")
-def home():
-    return "Bot is running!"
+def build_buttons(user_url: str):
+    encoded = quote_plus(user_url)
 
-@app.route(f"/{BOT_TOKEN}", methods=["POST"])
-async def webhook():
-    data = request.get_json(force=True)
-    update = Update.de_json(data, application.bot)
-
-    if update.message and update.message.text:
-        url = update.message.text.strip()
-
-        if url.startswith("http"):
-            token = encode_url(url)
-            final = BLOG_REDIRECT + token
-            await application.bot.send_message(
-                chat_id=update.message.chat.id,
-                text=f"🔗 Your Redirect Link:\n{final}"
+    buttons = [
+        [
+            InlineKeyboardButton(
+                "📥 480p Download",
+                url=f"{REDIRECT_BASE}{encoded}&q=480p"
             )
-        else:
-            await application.bot.send_message(
-                chat_id=update.message.chat.id,
-                text="Send a valid URL starting with http/https"
+        ],
+        [
+            InlineKeyboardButton(
+                "📥 720p Download",
+                url=f"{REDIRECT_BASE}{encoded}&q=720p"
             )
+        ],
+        [
+            InlineKeyboardButton(
+                "📥 1080p Download",
+                url=f"{REDIRECT_BASE}{encoded}&q=1080p"
+            )
+        ],
+    ]
 
-    return "ok"
-    import time
+    return InlineKeyboardMarkup(buttons)
 
-while True:
-    time.sleep(10)
+async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_url = update.message.text.strip()
+
+    if not user_url.startswith("http"):
+        await update.message.reply_text("Please send a valid URL.")
+        return
+
+    keyboard = build_buttons(user_url)
+
+    await update.message.reply_text(
+        "Choose quality to download:",
+        reply_markup=keyboard
+    )
+
+if __name__ == "__main__":
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_link))
+
+    print("Bot is running...")
+    app.run_polling()
