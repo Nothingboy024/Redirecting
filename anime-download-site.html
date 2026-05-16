@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnimeVault — Download Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08080f;
+    --surface: #10101e;
+    --surface2: #181828;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.15);
+    --accent: #e63650;
+    --accent2: #ff6b35;
+    --gold: #f5b94e;
+    --text: #f0eeff;
+    --muted: #7a7a9a;
+    --card-glow: rgba(230,54,80,0.12);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,8,15,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo span {
+    -webkit-text-fill-color: var(--text);
+    color: var(--text);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 220px;
+    transition: border-color 0.2s, width 0.3s;
+    outline: none;
+  }
+
+  .search-bar::placeholder { color: var(--muted); }
+  .search-bar:focus { border-color: var(--accent); width: 280px; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.97); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(230,54,80,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 9vw, 110px);
+    letter-spacing: 4px;
+    line-height: 0.9;
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 .line2 {
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto 2.5rem;
+    font-weight: 300;
+    position: relative;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    position: relative;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* FILTERS */
+  .filters-section {
+    padding: 0 2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .tag:hover, .tag.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(230,54,80,0.08);
+  }
+
+  .sort-select {
+    margin-left: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* FEATURED BANNER */
+  .featured-banner {
+    margin: 0 2rem 3rem;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    height: 280px;
+    background: linear-gradient(135deg, #1a0a1a 0%, #0d0d2a 50%, #1a0808 100%);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+
+  .featured-banner:hover { border-color: var(--accent); }
+
+  .featured-art {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 55%;
+    background: linear-gradient(90deg, transparent, rgba(15,5,25,0.3)),
+                repeating-linear-gradient(45deg, rgba(230,54,80,0.03) 0px, rgba(230,54,80,0.03) 1px, transparent 1px, transparent 20px),
+                repeating-linear-gradient(-45deg, rgba(255,107,53,0.03) 0px, rgba(255,107,53,0.03) 1px, transparent 1px, transparent 20px);
+  }
+
+  /* Anime silhouette art using CSS shapes */
+  .featured-art::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 60px;
+    width: 160px;
+    height: 240px;
+    background: linear-gradient(180deg, rgba(230,54,80,0.6), rgba(255,107,53,0.4));
+    clip-path: polygon(45% 0%, 55% 0%, 70% 15%, 80% 30%, 85% 50%, 80% 70%, 90% 85%, 70% 100%, 30% 100%, 10% 85%, 20% 70%, 15% 50%, 20% 30%, 30% 15%);
+    filter: blur(1px);
+  }
+
+  .featured-art::after {
+    content: '';
+    position: absolute;
+    bottom: 20px;
+    right: 200px;
+    width: 100px;
+    height: 160px;
+    background: linear-gradient(180deg, rgba(245,185,78,0.5), rgba(230,54,80,0.3));
+    clip-path: polygon(50% 0%, 65% 20%, 90% 30%, 75% 55%, 80% 80%, 50% 65%, 20% 80%, 25% 55%, 10% 30%, 35% 20%);
+    filter: blur(2px);
+  }
+
+  .featured-glow {
+    position: absolute;
+    right: 20%;
+    top: 50%;
+    transform: translate(50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(230,54,80,0.25), transparent 70%);
+    pointer-events: none;
+  }
+
+  .featured-content {
+    position: relative;
+    padding: 2.5rem;
+    z-index: 1;
+    max-width: 50%;
+  }
+
+  .featured-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .featured-content h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+
+  .featured-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-chip {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .meta-chip .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .featured-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn-ghost {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border: 1px solid var(--border-hover);
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-ghost:hover { background: rgba(255,255,255,0.13); }
+
+  .size-badge {
+    font-size: 12px;
+    color: var(--gold);
+    background: rgba(245,185,78,0.1);
+    border: 1px solid rgba(245,185,78,0.25);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  /* GRID */
+  .section-header {
+    padding: 0 2rem 1.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+  }
+
+  .section-count {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .see-all {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 0 2rem 3rem;
+  }
+
+  .anime-card {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    position: relative;
+  }
+
+  .anime-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(230,54,80,0.4);
+    box-shadow: 0 12px 40px var(--card-glow);
+  }
+
+  .card-poster {
+    width: 100%;
+    aspect-ratio: 3/4;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* CSS art for each poster */
+  .poster-1 { background: linear-gradient(160deg, #1a0a2e 0%, #2d1b4e 40%, #0d1a3a 100%); }
+  .poster-2 { background: linear-gradient(160deg, #0a1a0a 0%, #1a3a1a 40%, #0a0d1a 100%); }
+  .poster-3 { background: linear-gradient(160deg, #2a0a0a 0%, #4a1520 40%, #1a0a0a 100%); }
+  .poster-4 { background: linear-gradient(160deg, #0a1520 0%, #1a2a3a 40%, #0a0a1a 100%); }
+  .poster-5 { background: linear-gradient(160deg, #1a1a0a 0%, #2a2a0a 40%, #1a0a0a 100%); }
+  .poster-6 { background: linear-gradient(160deg, #0a0a2a 0%, #1a0a3a 40%, #2a0a2a 100%); }
+  .poster-7 { background: linear-gradient(160deg, #0a1a1a 0%, #0a2a2a 40%, #0a0a1a 100%); }
+  .poster-8 { background: linear-gradient(160deg, #2a1a0a 0%, #3a2010 40%, #1a0a0a 100%); }
+
+  .poster-shape {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 85%;
+  }
+
+  .shape-body {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 75%;
+    border-radius: 40% 40% 0 0;
+  }
+
+  .shape-head {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    padding-bottom: 40%;
+    border-radius: 50%;
+  }
+
+  .card-1 .shape-body { background: linear-gradient(180deg, rgba(160,80,255,0.7), rgba(80,40,180,0.5)); }
+  .card-1 .shape-head { background: rgba(255,200,160,0.8); }
+  .card-2 .shape-body { background: linear-gradient(180deg, rgba(50,200,100,0.7), rgba(20,100,50,0.5)); }
+  .card-2 .shape-head { background: rgba(255,210,170,0.8); }
+  .card-3 .shape-body { background: linear-gradient(180deg, rgba(230,54,80,0.8), rgba(140,20,40,0.5)); }
+  .card-3 .shape-head { background: rgba(255,200,155,0.8); }
+  .card-4 .shape-body { background: linear-gradient(180deg, rgba(50,150,230,0.7), rgba(20,70,140,0.5)); }
+  .card-4 .shape-head { background: rgba(245,210,175,0.8); }
+  .card-5 .shape-body { background: linear-gradient(180deg, rgba(230,180,50,0.7), rgba(140,90,10,0.5)); }
+  .card-5 .shape-head { background: rgba(255,205,160,0.8); }
+  .card-6 .shape-body { background: linear-gradient(180deg, rgba(150,80,220,0.7), rgba(80,30,140,0.5)); }
+  .card-6 .shape-head { background: rgba(230,200,240,0.8); }
+  .card-7 .shape-body { background: linear-gradient(180deg, rgba(50,200,200,0.7), rgba(20,100,100,0.5)); }
+  .card-7 .shape-head { background: rgba(255,215,170,0.8); }
+  .card-8 .shape-body { background: linear-gradient(180deg, rgba(230,120,30,0.8), rgba(140,60,10,0.5)); }
+  .card-8 .shape-head { background: rgba(255,200,155,0.8); }
+
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+  }
+
+  .card-rank {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  .card-quality {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.05em;
+  }
+
+  .card-poster-info {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .card-genre-tags {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+
+  .genre-tag {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: rgba(230,54,80,0.3);
+    border: 1px solid rgba(230,54,80,0.4);
+    color: rgba(255,180,190,0.9);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .genre-tag.alt {
+    background: rgba(255,107,53,0.25);
+    border-color: rgba(255,107,53,0.35);
+    color: rgba(255,200,160,0.9);
+  }
+
+  .genre-tag.blue {
+    background: rgba(50,150,255,0.25);
+    border-color: rgba(50,150,255,0.35);
+    color: rgba(150,200,255,0.9);
+  }
+
+  .card-body {
+    padding: 14px 16px 16px;
+  }
+
+  .card-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-size {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .zip-icon {
+    width: 14px;
+    height: 14px;
+    background: var(--gold);
+    border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    color: #000;
+    font-weight: 900;
+  }
+
+  .card-dl-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .card-dl-btn:hover { opacity: 0.85; }
+
+  .card-rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  /* SEASON SECTION */
+  .season-section {
+    padding: 0 2rem 3rem;
+  }
+
+  .season-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .season-item {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .season-item:hover, .season-item.active {
+    background: rgba(230,54,80,0.08);
+    border-color: rgba(230,54,80,0.3);
+  }
+
+  .season-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .season-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+
+  .season-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* DOWNLOAD MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-hover);
+    border-radius: 20px;
+    width: min(500px, 95vw);
+    padding: 2rem;
+    position: relative;
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes modalIn {
+    from { transform: scale(0.88) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.07);
+    border: none;
+    color: var(--text);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: rgba(255,255,255,0.14); }
+
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin-bottom: 0.25rem;
+  }
+
+  .modal-meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 1.5rem;
+  }
+
+  .dl-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .dl-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .dl-option:hover {
+    border-color: var(--accent);
+    background: rgba(230,54,80,0.06);
+  }
+
+  .dl-option.selected {
+    border-color: var(--accent);
+    background: rgba(230,54,80,0.1);
+  }
+
+  .dl-option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .dl-quality {
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .dl-details {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .dl-size {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .modal-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .modal-btn:hover { opacity: 0.88; }
+
+  .progress-wrap {
+    display: none;
+    margin-top: 1rem;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-bar-bg {
+    background: var(--surface2);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.2s;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+    margin-top: 2rem;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #333358; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Anime<span>Vault</span></div>
+  <ul class="nav-links">
+    <li><a href="#">Browse</a></li>
+    <li><a href="#">New Releases</a></li>
+    <li><a href="#">Series</a></li>
+    <li><a href="#">Movies</a></li>
+    <li><a href="#">Requests</a></li>
+  </ul>
+  <div class="nav-right">
+    <input class="search-bar" type="text" placeholder="Search anime…">
+    <button class="btn-primary">Sign In</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <h1>
+    DOWNLOAD<br>
+    <span class="line2">YOUR ANIME</span><br>
+    UNIVERSE
+  </h1>
+  <p>High-quality anime ZIP archives — batch downloads, full seasons, and movies all in one place.</p>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">12,400+</div>
+      <div class="stat-label">Episodes</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">840</div>
+      <div class="stat-label">Series</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4K / 1080p</div>
+      <div class="stat-label">Quality</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">Free</div>
+      <div class="stat-label">Always</div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTERS -->
+<div class="filters-section">
+  <span class="filter-label">Genre:</span>
+  <div class="filter-tags">
+    <button class="tag active" onclick="filterTag(this)">All</button>
+    <button class="tag" onclick="filterTag(this)">Action</button>
+    <button class="tag" onclick="filterTag(this)">Fantasy</button>
+    <button class="tag" onclick="filterTag(this)">Romance</button>
+    <button class="tag" onclick="filterTag(this)">Sci-Fi</button>
+    <button class="tag" onclick="filterTag(this)">Slice of Life</button>
+    <button class="tag" onclick="filterTag(this)">Horror</button>
+    <button class="tag" onclick="filterTag(this)">Sports</button>
+    <button class="tag" onclick="filterTag(this)">Isekai</button>
+  </div>
+  <select class="sort-select">
+    <option>Sort: Latest</option>
+    <option>Sort: Most Downloaded</option>
+    <option>Sort: Rating</option>
+    <option>Sort: Size</option>
+  </select>
+</div>
+
+<!-- FEATURED -->
+<div class="featured-banner" onclick="openModal('Demon Slayer: Kimetsu no Yaiba', 'Complete Series · 44 Episodes · 2019–2021')">
+  <div class="featured-art"></div>
+  <div class="featured-glow"></div>
+  <div class="featured-content">
+    <span class="featured-badge">⚡ Featured Drop</span>
+    <h2>DEMON SLAYER<br>KIMETSU NO YAIBA</h2>
+    <div class="featured-meta">
+      <span class="meta-chip"><span class="dot"></span> Complete Series</span>
+      <span class="meta-chip"><span class="dot"></span> 44 Episodes</span>
+      <span class="meta-chip"><span class="dot"></span> Blu-ray 4K</span>
+    </div>
+    <div class="featured-actions">
+      <button class="btn-primary" onclick="event.stopPropagation(); openModal('Demon Slayer: Kimetsu no Yaiba', 'Complete Series · 44 Episodes')">Download ZIP</button>
+      <button class="btn-ghost">Details</button>
+      <span class="size-badge">📦 48.2 GB</span>
+    </div>
+  </div>
+</div>
+
+<!-- TRENDING GRID -->
+<div class="section-header">
+  <span class="section-title">TRENDING NOW</span>
+  <span class="section-count">128 titles</span>
+  <a class="see-all">See all →</a>
+</div>
+
+<div class="anime-grid">
+
+  <div class="anime-card card-1" onclick="openModal('Attack on Titan', 'Final Season Part 3 · 2023')">
+    <div class="card-poster poster-1">
+      <div class="card-rank">#1</div>
+      <div class="card-quality">4K</div>
+      <div class="poster-shape card-1">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag">Action</span>
+          <span class="genre-tag alt">Dark</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Attack on Titan</div>
+      <div class="card-subtitle">Final Season Part 3 · 2023</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 22.4 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-2" onclick="openModal('Jujutsu Kaisen', 'Season 2 Complete · 2023')">
+    <div class="card-poster poster-2">
+      <div class="card-rank">#2</div>
+      <div class="card-quality">1080p</div>
+      <div class="poster-shape card-2">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag">Supernatural</span>
+          <span class="genre-tag blue">Shounen</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Jujutsu Kaisen</div>
+      <div class="card-subtitle">Season 2 Complete · 2023</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 18.7 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-3" onclick="openModal('Chainsaw Man', 'Season 1 Complete · 2022')">
+    <div class="card-poster poster-3">
+      <div class="card-rank">#3</div>
+      <div class="card-quality">4K</div>
+      <div class="poster-shape card-3">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag">Action</span>
+          <span class="genre-tag alt">Gore</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Chainsaw Man</div>
+      <div class="card-subtitle">Season 1 Complete · 2022</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 15.3 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-4" onclick="openModal('Vinland Saga', 'Season 2 Complete · 2023')">
+    <div class="card-poster poster-4">
+      <div class="card-rank">#4</div>
+      <div class="card-quality">1080p</div>
+      <div class="poster-shape card-4">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag blue">Historical</span>
+          <span class="genre-tag">Drama</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Vinland Saga</div>
+      <div class="card-subtitle">Season 2 Complete · 2023</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 21.1 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-5" onclick="openModal('My Hero Academia', 'Season 6 · 2022')">
+    <div class="card-poster poster-5">
+      <div class="card-rank">#5</div>
+      <div class="card-quality">4K</div>
+      <div class="poster-shape card-5">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag alt">Superhero</span>
+          <span class="genre-tag blue">Shounen</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">My Hero Academia</div>
+      <div class="card-subtitle">Season 6 · 2022</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 19.8 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-6" onclick="openModal('Spy x Family', 'Part 2 · 2022')">
+    <div class="card-poster poster-6">
+      <div class="card-rank">#6</div>
+      <div class="card-quality">1080p</div>
+      <div class="poster-shape card-6">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag">Comedy</span>
+          <span class="genre-tag">Action</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Spy x Family</div>
+      <div class="card-subtitle">Part 2 · 2022</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 11.6 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-7" onclick="openModal('Bleach: TYBW', 'Part 3 · 2023')">
+    <div class="card-poster poster-7">
+      <div class="card-rank">#7</div>
+      <div class="card-quality">4K</div>
+      <div class="poster-shape card-7">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag blue">Shounen</span>
+          <span class="genre-tag">Action</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Bleach: TYBW</div>
+      <div class="card-subtitle">Part 3 · 2023</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 16.2 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="anime-card card-8" onclick="openModal('Oshi no Ko', 'Season 1 Complete · 2023')">
+    <div class="card-poster poster-8">
+      <div class="card-rank">#8</div>
+      <div class="card-quality">1080p</div>
+      <div class="poster-shape card-8">
+        <div class="shape-head"></div>
+        <div class="shape-body"></div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="card-poster-info">
+        <div class="card-genre-tags">
+          <span class="genre-tag alt">Drama</span>
+          <span class="genre-tag">Mystery</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Oshi no Ko</div>
+      <div class="card-subtitle">Season 1 Complete · 2023</div>
+      <div class="card-footer">
+        <div class="card-size"><span class="zip-icon">ZIP</span> 9.4 GB</div>
+        <button class="card-dl-btn">↓ Get</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SEASON SECTION -->
+<div class="section-header">
+  <span class="section-title">BROWSE BY SEASON</span>
+</div>
+<div class="season-section">
+  <div class="season-banner">
+    <div class="season-item active">
+      <span class="season-icon">❄️</span>
+      <div class="season-name">WINTER</div>
+      <div class="season-count">84 titles</div>
+    </div>
+    <div class="season-item">
+      <span class="season-icon">🌸</span>
+      <div class="season-name">SPRING</div>
+      <div class="season-count">97 titles</div>
+    </div>
+    <div class="season-item">
+      <span class="season-icon">☀️</span>
+      <div class="season-name">SUMMER</div>
+      <div class="season-count">76 titles</div>
+    </div>
+    <div class="season-item">
+      <span class="season-icon">🍂</span>
+      <div class="season-name">FALL</div>
+      <div class="season-count">91 titles</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">AnimeVault</div>
+  <ul class="footer-links">
+    <li><a href="#">About</a></li>
+    <li><a href="#">DMCA</a></li>
+    <li><a href="#">Contact</a></li>
+    <li><a href="#">Request Anime</a></li>
+    <li><a href="#">Discord</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 AnimeVault</div>
+</footer>
+
+<!-- DOWNLOAD MODAL -->
+<div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modal-title">TITLE</div>
+    <div class="modal-meta" id="modal-meta">Meta info</div>
+    <div class="dl-options">
+      <div class="dl-option selected" onclick="selectOption(this)">
+        <div class="dl-option-info">
+          <div class="dl-quality">4K UHD Blu-ray</div>
+          <div class="dl-details">x265 HEVC · 10-bit · Full Pack</div>
+        </div>
+        <div class="dl-size">22.4 GB</div>
+      </div>
+      <div class="dl-option" onclick="selectOption(this)">
+        <div class="dl-option-info">
+          <div class="dl-quality">1080p Full HD</div>
+          <div class="dl-details">x264 AVC · 8-bit · Dual Audio</div>
+        </div>
+        <div class="dl-size">12.1 GB</div>
+      </div>
+      <div class="dl-option" onclick="selectOption(this)">
+        <div class="dl-option-info">
+          <div class="dl-quality">720p HD</div>
+          <div class="dl-details">x264 AVC · Compressed · Dual Audio</div>
+        </div>
+        <div class="dl-size">5.8 GB</div>
+      </div>
+      <div class="dl-option" onclick="selectOption(this)">
+        <div class="dl-option-info">
+          <div class="dl-quality">480p SD</div>
+          <div class="dl-details">Legacy · Smallest size · Dual Audio</div>
+        </div>
+        <div class="dl-size">2.1 GB</div>
+      </div>
+    </div>
+    <button class="modal-btn" onclick="startDownload()">⬇ Download ZIP Archive</button>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text">Preparing download... 0%</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function filterTag(el) {
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openModal(title, meta) {
+  document.getElementById('modal-title').textContent = title.toUpperCase();
+  document.getElementById('modal-meta').textContent = meta;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('progress-wrap').classList.remove('show');
+  document.getElementById('progress-fill').style.width = '0%';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+function selectOption(el) {
+  document.querySelectorAll('.dl-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function startDownload() {
+  const wrap = document.getElementById('progress-wrap');
+  const fill = document.getElementById('progress-fill');
+  const text = document.getElementById('progress-text');
+  wrap.classList.add('show');
+  let pct = 0;
+  const messages = ['Preparing ZIP archive...', 'Compressing episodes...', 'Verifying integrity...', 'Ready!'];
+  const iv = setInterval(() => {
+    pct += Math.random() * 8 + 2;
+    if (pct >= 100) {
+      pct = 100;
+      clearInterval(iv);
+      text.textContent = '✓ Download complete!';
+    } else {
+      text.textContent = messages[Math.floor(pct/30)] + ' ' + Math.round(pct) + '%';
+    }
+    fill.style.width = pct + '%';
+  }, 180);
+}
+
+document.querySelectorAll('.season-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.season-item').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
